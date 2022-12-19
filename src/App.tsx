@@ -7,13 +7,10 @@ import {
   IonTabBar,
   IonTabButton,
   IonTabs,
-  setupIonicReact
+  setupIonicReact,
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { ellipse, square, triangle } from 'ionicons/icons';
-import Tab1 from './pages/Tab1';
-import Tab2 from './pages/Tab2';
-import Tab3 from './pages/Tab3';
+import { listOutline } from 'ionicons/icons';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -32,45 +29,84 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
 /* Theme variables */
-import './theme/variables.css';
+import './assets/style/variables.css';
+import './assets/style/main.scss';
+
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from './supabase-client';
+import Auth from './components/_auth/Auth/Auth';
+import { ToDoPage } from './pages/ToDoPage/ToDoPage';
+import { ContentWrapper } from './components/ContentWrapper/ContentWrapper';
+import {
+  authenticate,
+  handleSessionChange,
+  setActiveUserProfile,
+} from './redux/authentication-slice';
+import { useLazyGetProfileQuery } from './services/profile.service';
+import { store } from './redux/store';
 
 setupIonicReact();
 
-const App: React.FC = () => (
-  <IonApp>
-    <IonReactRouter>
-      <IonTabs>
-        <IonRouterOutlet>
-          <Route exact path="/tab1">
-            <Tab1 />
-          </Route>
-          <Route exact path="/tab2">
-            <Tab2 />
-          </Route>
-          <Route path="/tab3">
-            <Tab3 />
-          </Route>
-          <Route exact path="/">
-            <Redirect to="/tab1" />
-          </Route>
-        </IonRouterOutlet>
-        <IonTabBar slot="bottom">
-          <IonTabButton tab="tab1" href="/tab1">
-            <IonIcon icon={triangle} />
-            <IonLabel>Tab 1</IonLabel>
-          </IonTabButton>
-          <IonTabButton tab="tab2" href="/tab2">
-            <IonIcon icon={ellipse} />
-            <IonLabel>Tab 2</IonLabel>
-          </IonTabButton>
-          <IonTabButton tab="tab3" href="/tab3">
-            <IonIcon icon={square} />
-            <IonLabel>Tab 3</IonLabel>
-          </IonTabButton>
-        </IonTabBar>
-      </IonTabs>
-    </IonReactRouter>
-  </IonApp>
-);
+const App: React.FC = () => {
+  const [session, setSession] = useState<any>(null);
+  const [getProfile] = useLazyGetProfileQuery();
+
+  const updateActiveUser = useCallback(
+    async (profileId: string) => {
+      const profile = await getProfile({ profileId });
+      store.dispatch(setActiveUserProfile(profile.data));
+    },
+    [getProfile],
+  );
+
+  useEffect(() => {
+    // INITIAL SESSION
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        store.dispatch(authenticate(session.user));
+        updateActiveUser(session.user.id);
+      }
+      setSession(session);
+    });
+
+    // SESSION CHANGE
+    supabase.auth.onAuthStateChange((_event, session) => {
+      handleSessionChange(_event, session);
+      setSession(session);
+    });
+  }, [updateActiveUser]);
+
+  function renderApp() {
+    return (
+      <IonReactRouter>
+        <IonTabs>
+          <IonRouterOutlet>
+            <Route exact path="/to-do">
+              <ContentWrapper>
+                <ToDoPage />
+              </ContentWrapper>
+            </Route>
+
+            <Route exact path="/">
+              <Redirect to="/to-do" />
+            </Route>
+          </IonRouterOutlet>
+          <IonTabBar slot="bottom">
+            <IonTabButton tab="to-do" href="/to-do">
+              <IonIcon icon={listOutline} />
+              <IonLabel>To Do</IonLabel>
+            </IonTabButton>
+          </IonTabBar>
+        </IonTabs>
+      </IonReactRouter>
+    );
+  }
+
+  function renderAuth() {
+    return <Auth />;
+  }
+
+  return <IonApp>{!session ? renderAuth() : renderApp()}</IonApp>;
+};
 
 export default App;

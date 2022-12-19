@@ -1,0 +1,10 @@
+.form-incrementor_container {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+}
+
+.form-incrementor_button {
+  height: calc(100% - 4px);
+  margin: 0;
+  margin-top: 2px;
+}

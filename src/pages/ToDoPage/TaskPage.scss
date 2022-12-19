@@ -1,0 +1,17 @@
+.task-page_date-container {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  justify-items: center;
+  align-items: center;
+}
+
+.task-page_date-display {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  .day-of-week {
+    font-weight: bold;
+    font-size: 1.5em;
+  }
+}

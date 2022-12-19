@@ -1,0 +1,23 @@
+.task-list-item_container {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  position: relative;
+  padding: 8px;
+  transition: all 0.2s;
+}
+
+.task-list-item_complete {
+  font-weight: lighter;
+  opacity: 0.5;
+}
+
+.task-list-item_icon-spacer {
+  width: 28px;
+  height: 28px;
+}
+
+ion-icon {
+  font-size: 28px;
+}

@@ -1,0 +1,17 @@
+.form-toggle_container {
+  background: var(--ion-color-secondary);
+  position: relative;
+  &.active {
+    background: var(--ion-color-success);
+    .form-toggle_switch {
+      margin-left: 40px;
+    }
+  }
+}
+
+.form-toggle_switch {
+  background: var(--ion-item-background);
+  width: calc(100% - 40px);
+  transition: margin 0.1s;
+  transition-timing-function: cubic-bezier(0.02, 0.66, 0.66, 1.35);
+}
