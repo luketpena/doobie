@@ -9,6 +9,7 @@ interface FormInputProps {
   min?: number;
   max?: number;
   rules?: any;
+  disabled?: boolean;
 }
 
 const FormInput: React.FC<FormInputProps> = ({
@@ -19,6 +20,7 @@ const FormInput: React.FC<FormInputProps> = ({
   min,
   max,
   rules,
+  disabled = false,
 }) => {
   const targetId = `${name}-input`;
   return (
@@ -37,6 +39,7 @@ const FormInput: React.FC<FormInputProps> = ({
               type={type}
               min={min}
               max={max}
+              disabled={disabled}
             />
           );
         }}

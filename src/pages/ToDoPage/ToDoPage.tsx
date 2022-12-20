@@ -17,6 +17,8 @@ import {
 } from '../../services/task.service';
 import TaskList from './components/TaskList/TaskList';
 import './TaskPage.scss';
+import { isToday as isTodayFn } from 'date-fns';
+import QuickAddTask from '../../components/QuickAddTask/QuickAddTask';
 
 const ToDoPage: React.FC = () => {
   const container = useRef<any>(null);
@@ -31,13 +33,13 @@ const ToDoPage: React.FC = () => {
     profile ? { profileId: profile.id, date } : skipToken,
   );
 
-  const isToday = useMemo(() => {
-    return getDbDate(date) === getDbDate();
+  const isToday: boolean = useMemo(() => {
+    return isTodayFn(new Date(date));
   }, [date]);
 
   const tasks = useMemo(() => {
     // ...(dailyTasks ?? []),
-    return [...(recurringTasks ?? [])];
+    return [...(recurringTasks ?? []), ...(dailyTasks ?? [])];
   }, [dailyTasks, recurringTasks]);
 
   function incrementDate(change: number) {
@@ -60,6 +62,7 @@ const ToDoPage: React.FC = () => {
           <IonIcon icon={chevronForwardCircleOutline} />
         </IonButton>
       </div>
+      <QuickAddTask />
       <TaskList tasks={tasks} date={date} />
       <IonFab slot="fixed" horizontal="end" vertical="bottom">
         <IonFabButton onClick={() => setOpen(true)}>

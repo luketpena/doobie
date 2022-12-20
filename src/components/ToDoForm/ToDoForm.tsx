@@ -17,6 +17,7 @@ import { useCreateTaskMutation } from '../../services/task.service';
 import { useAppSelector } from '../../redux/store';
 import { selectProfile } from '../../redux/authentication-slice';
 import { useEffect } from 'react';
+import { startOfDay } from 'date-fns';
 
 interface ToDoFormProps {
   open: boolean;
@@ -91,6 +92,7 @@ const ToDoForm: React.FC<ToDoFormProps> = ({ open, setOpen }) => {
     const payload = {
       ...data,
       profile_id: profile.id,
+      start_at: startOfDay(data.start_at),
     };
     try {
       await createTask(payload);

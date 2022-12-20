@@ -1,0 +1,11 @@
+.quick-add-task_container {
+  display: flex;
+  align-items: center;
+  .button {
+    height: 70px;
+    margin: 0;
+  }
+  .form-input_container {
+    padding-right: 0;
+  }
+}
