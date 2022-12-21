@@ -1,15 +1,22 @@
-import { IonIcon, IonRippleEffect, IonSpinner } from '@ionic/react';
+import {
+  IonIcon,
+  IonRippleEffect,
+  IonSpinner,
+  useIonActionSheet,
+} from '@ionic/react';
 import classNames from 'classnames';
 import { checkmarkCircleOutline, ellipseOutline } from 'ionicons/icons';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { getDbDate } from '../../../../services/service-utils';
 import {
   useMarkCompleteMutation,
+  useMarkDeletedMutation,
   useMarkIncompleteMutation,
 } from '../../../../services/task.service';
 import { checkTaskComplete } from '../../../../util/task-fns';
 import { Task } from '../../../../util/types/database';
 import './TaskListItem.scss';
+import Hammer from 'hammerjs';
 
 interface TaskListItemProps {
   task: Task;
@@ -17,10 +24,15 @@ interface TaskListItemProps {
 }
 
 const TaskListItem: React.FC<TaskListItemProps> = ({ task, date }) => {
+  const [present] = useIonActionSheet();
+
+  const [markDeleted] = useMarkDeletedMutation();
   const [markComplete, { isLoading: completeLoading }] =
     useMarkCompleteMutation();
   const [markIncomplete, { isLoading: incompleteLoading }] =
     useMarkIncompleteMutation();
+
+  const containerRef = useRef<any>(null);
 
   const completed = useMemo(() => {
     return checkTaskComplete(task, date);
@@ -30,10 +42,32 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ task, date }) => {
     return getDbDate(date) === getDbDate();
   }, [date]);
 
+  useEffect(() => {
+    let hammerTime: HammerManager;
+    if (containerRef.current) {
+      hammerTime = new Hammer(containerRef.current);
+      hammerTime.on('press', function (e: any) {
+        present({
+          buttons: [
+            {
+              text: 'Delete task',
+              role: 'destructive',
+              handler: () => {
+                markDeleted({ taskId: task.id });
+              },
+            },
+          ],
+        });
+      });
+    }
+    return () => {
+      hammerTime.off('press');
+    };
+  }, [containerRef, present, task, markDeleted]);
+
   function toggleCompletion() {
     if (!completeLoading && !incompleteLoading && isToday) {
       if (!completed) {
-        console.log('Mark complete!');
         markComplete({ taskId: task.id, date });
       } else {
         markIncomplete({ taskId: task.id });
@@ -55,6 +89,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ task, date }) => {
 
   return (
     <div
+      ref={containerRef}
       className={classNames('task-list-item_container', {
         'task-list-item_complete': completed && isToday,
         'ion-activatable ripple-parent rectangle': isToday,

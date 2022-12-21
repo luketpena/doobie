@@ -1,11 +1,7 @@
-import { IonButton, IonFab, IonFabButton, IonIcon } from '@ionic/react';
+import { IonFab, IonFabButton, IonIcon } from '@ionic/react';
 import { skipToken } from '@reduxjs/toolkit/dist/query';
-import { addDays, format, parseISO } from 'date-fns';
-import {
-  add,
-  chevronBackCircleOutline,
-  chevronForwardCircleOutline,
-} from 'ionicons/icons';
+import { addDays, parseISO } from 'date-fns';
+import { add } from 'ionicons/icons';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import TaskForm from '../../components/TaskForm/TaskForm';
 import { selectProfile } from '../../redux/authentication-slice';
@@ -16,8 +12,9 @@ import {
 } from '../../services/task.service';
 import TaskList from './components/TaskList/TaskList';
 import './TaskPage.scss';
-import { isToday as isTodayFn } from 'date-fns';
+
 import QuickAddTask from '../../components/QuickAddTask/QuickAddTask';
+import DateNavigator from './components/DateNavigator/DateNavigator';
 
 const TaskPage: React.FC = () => {
   const container = useRef<any>(null);
@@ -32,10 +29,6 @@ const TaskPage: React.FC = () => {
   const { data: recurringTasks } = useGetRecurringTasksQuery(
     profile ? { profileId: profile.id, date } : skipToken,
   );
-
-  const isToday: boolean = useMemo(() => {
-    return isTodayFn(new Date(date));
-  }, [date]);
 
   // NOTE: isLoading does not reset for these ongoing queries, we respond to data received instead
   useEffect(() => {
@@ -72,20 +65,11 @@ const TaskPage: React.FC = () => {
         onKeyDown={(event) => navigateDateByKey(event)}
       >
         {/* Date control */}
-        <div className="task-page_date-container">
-          <IonButton onClick={() => incrementDate(-1)}>
-            <IonIcon icon={chevronBackCircleOutline} />
-          </IonButton>
-          <div className="task-page_date-display">
-            <div className="day-of-week">
-              {isToday ? 'Today' : format(new Date(date), 'EEEE')}
-            </div>
-            <div>{format(new Date(date), 'MMMM do, yyyy')}</div>
-          </div>
-          <IonButton onClick={() => incrementDate(1)}>
-            <IonIcon icon={chevronForwardCircleOutline} />
-          </IonButton>
-        </div>
+        <DateNavigator
+          date={date}
+          incrementDate={incrementDate}
+          setDate={setDate}
+        />
 
         {/* Quick add */}
         <QuickAddTask date={date} />

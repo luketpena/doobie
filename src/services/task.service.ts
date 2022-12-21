@@ -85,6 +85,7 @@ const taskService = api.injectEndpoints({
             profile_id: profileId,
             recurrence: TaskRecurrence.Single,
           })
+          .is('deleted_at', null)
           .gte('start_at', startOfDay(start_at).toISOString())
           .lt('start_at', endOfDay(start_at).toISOString())
           .order('created_at', { ascending: false })
@@ -101,6 +102,7 @@ const taskService = api.injectEndpoints({
             .from('task')
             .select('*')
             .eq('profile_id', profileId)
+            .is('deleted_at', null)
             .neq('recurrence', TaskRecurrence.Single)
             .then(processSupabaseDataArray);
 
@@ -144,6 +146,22 @@ const taskService = api.injectEndpoints({
       },
       invalidatesTags: [apiTags.tasks, apiTags.recurringTasks],
     }),
+
+    markDeleted: build.mutation<Task, { taskId: string }>({
+      queryFn: async ({ taskId }) => {
+        const data = await supabase
+          .from('task')
+          .update({
+            deleted_at: new Date(),
+          })
+          .eq('id', taskId)
+          .select('*')
+          .then(processSupabaseData);
+
+        return { data };
+      },
+      invalidatesTags: [apiTags.tasks, apiTags.recurringTasks],
+    }),
   }),
 });
 
@@ -154,4 +172,5 @@ export const {
   useGetRecurringTasksQuery,
   useMarkCompleteMutation,
   useMarkIncompleteMutation,
+  useMarkDeletedMutation,
 } = taskService;
