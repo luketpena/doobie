@@ -16,6 +16,10 @@ const taskService = api.injectEndpoints({
     // -- POST --
     createTask: build.mutation<Task, TaskFormValues>({
       queryFn: async (payload) => {
+        if (!payload.name) {
+          throw new Error('Task must have a name');
+        }
+
         const data = await supabase
           .from('task')
           .insert({
@@ -39,6 +43,10 @@ const taskService = api.injectEndpoints({
       { name: string; profile_id: string; date: Date | string }
     >({
       queryFn: async ({ name, profile_id, date }) => {
+        if (!name) {
+          throw new Error('Task must have a name');
+        }
+
         const payload: TaskFormValues = {
           name,
           start_at: new Date(date),

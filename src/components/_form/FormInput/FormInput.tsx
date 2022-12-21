@@ -1,3 +1,4 @@
+import React from 'react';
 import { Controller } from 'react-hook-form';
 import './FormInput.scss';
 
@@ -12,40 +13,46 @@ interface FormInputProps {
   disabled?: boolean;
 }
 
-const FormInput: React.FC<FormInputProps> = ({
-  name,
-  control,
-  placeholder,
-  type = 'text',
-  min,
-  max,
-  rules,
-  disabled = false,
-}) => {
-  const targetId = `${name}-input`;
-  return (
-    <div className="form-input_container">
-      <Controller
-        control={control}
-        name={name}
-        rules={rules}
-        render={({ field }) => {
-          return (
-            <input
-              id={targetId}
-              className="form-input"
-              {...field}
-              placeholder={placeholder}
-              type={type}
-              min={min}
-              max={max}
-              disabled={disabled}
-            />
-          );
-        }}
-      />
-    </div>
-  );
-};
+const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
+  (
+    {
+      name,
+      control,
+      placeholder,
+      type = 'text',
+      min,
+      max,
+      rules,
+      disabled = false,
+    },
+    ref,
+  ) => {
+    const targetId = `${name}-input`;
+    return (
+      <div className="form-input_container">
+        <Controller
+          control={control}
+          name={name}
+          rules={rules}
+          render={({ field }) => {
+            return (
+              <input
+                id={targetId}
+                className="form-input"
+                {...field}
+                placeholder={placeholder}
+                type={type}
+                min={min}
+                max={max}
+                disabled={disabled}
+                ref={ref}
+              />
+            );
+          }}
+        />
+      </div>
+    );
+  },
+);
 
 export default FormInput;
