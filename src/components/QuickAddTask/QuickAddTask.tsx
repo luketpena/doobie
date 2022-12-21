@@ -8,7 +8,11 @@ import { useQuickCreateTaskMutation } from '../../services/task.service';
 import FormInput from '../_form/FormInput/FormInput';
 import './QuickAddTask.scss';
 
-const QuickAddTask: React.FC = () => {
+interface QuickAddTaskProps {
+  date: string;
+}
+
+const QuickAddTask: React.FC<QuickAddTaskProps> = ({ date }) => {
   const profile = useAppSelector(selectProfile);
   const [quickCreateTask, { isLoading, isSuccess }] =
     useQuickCreateTaskMutation();
@@ -25,23 +29,27 @@ const QuickAddTask: React.FC = () => {
     }
   }, [isLoading, isSuccess, reset]);
 
-  async function submit() {
+  async function submit(event: any) {
+    event.preventDefault();
     const name = getValues().name;
-    await quickCreateTask({ name, profile_id: profile.id });
+    await quickCreateTask({ name, profile_id: profile.id, date });
   }
 
   return (
-    <div className="quick-add-task_container">
+    <form
+      className="flex items-center quick-add-task_container "
+      onSubmit={submit}
+    >
       <FormInput
         control={control}
         name="name"
         placeholder="Task name"
         disabled={isLoading}
       />
-      <IonButton disabled={isLoading} onClick={submit}>
+      <IonButton disabled={isLoading} onClick={submit} className="h-[48px] m-0">
         <IonIcon icon={addCircle} />
       </IonButton>
-    </div>
+    </form>
   );
 };
 

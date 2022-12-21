@@ -34,36 +34,37 @@ const taskService = api.injectEndpoints({
       invalidatesTags: [apiTags.tasks, apiTags.recurringTasks],
     }),
 
-    quickCreateTask: build.mutation<Task, { name: string; profile_id: string }>(
-      {
-        queryFn: async ({ name, profile_id }) => {
-          const payload: ToDoFormValues = {
-            name,
-            start_at: new Date(),
-            important: false,
-            recurrence: TaskRecurrence.Single,
-            cycle_unit: null,
-            cycle_interval: null,
-            list_type: null,
-            warn_days: 0,
-            subtasks: [],
-          };
+    quickCreateTask: build.mutation<
+      Task,
+      { name: string; profile_id: string; date: Date | string }
+    >({
+      queryFn: async ({ name, profile_id, date }) => {
+        const payload: ToDoFormValues = {
+          name,
+          start_at: new Date(date),
+          important: false,
+          recurrence: TaskRecurrence.Single,
+          cycle_unit: null,
+          cycle_interval: null,
+          list_type: null,
+          warn_days: 0,
+          subtasks: [],
+        };
 
-          const data = await supabase
-            .from('task')
-            .insert({
-              ...payload,
-              profile_id,
-            })
-            .select('*')
-            .limit(1)
-            .then(handleSupabaseError);
+        const data = await supabase
+          .from('task')
+          .insert({
+            ...payload,
+            profile_id,
+          })
+          .select('*')
+          .limit(1)
+          .then(handleSupabaseError);
 
-          return { data };
-        },
-        invalidatesTags: [apiTags.tasks],
+        return { data };
       },
-    ),
+      invalidatesTags: [apiTags.tasks],
+    }),
 
     // -- GET --
     getTasksForDate: build.query<Task[], { profileId: string; date: string }>({
@@ -78,9 +79,8 @@ const taskService = api.injectEndpoints({
           })
           .gte('start_at', startOfDay(start_at).toISOString())
           .lt('start_at', endOfDay(start_at).toISOString())
-          .order('id')
+          .order('created_at', { ascending: false })
           .then(processSupabaseDataArray);
-
         return { data };
       },
       providesTags: [apiTags.tasks],

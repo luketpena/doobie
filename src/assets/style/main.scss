@@ -1,14 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import './tailwind.css';
 
 .form-input {
   width: 100%;
-  padding: 16px;
+  padding: 8px;
   outline: none;
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 4px;
-  font-size: 1.5em;
+  font-size: 1.25em;
   &:focus {
     border-color: rgba(0, 128, 256, 0.8);
   }

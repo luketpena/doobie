@@ -6,11 +6,10 @@ import {
   chevronBackCircleOutline,
   chevronForwardCircleOutline,
 } from 'ionicons/icons';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ToDoForm from '../../components/ToDoForm/ToDoForm';
 import { selectProfile } from '../../redux/authentication-slice';
 import { useAppSelector } from '../../redux/store';
-import { getDbDate } from '../../services/service-utils';
 import {
   useGetRecurringTasksQuery,
   useGetTasksForDateQuery,
@@ -25,6 +24,7 @@ const ToDoPage: React.FC = () => {
   const profile = useAppSelector(selectProfile);
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(new Date().toISOString());
+  const [loading, setLoading] = useState(true);
 
   const { data: dailyTasks } = useGetTasksForDateQuery(
     profile ? { profileId: profile.id, date } : skipToken,
@@ -37,40 +37,73 @@ const ToDoPage: React.FC = () => {
     return isTodayFn(new Date(date));
   }, [date]);
 
+  // NOTE: isLoading does not reset for these ongoing queries, we respond to data received instead
+  useEffect(() => {
+    setLoading(false);
+  }, [dailyTasks, recurringTasks]);
+
+  // Combines recurring tasks for today and all daily tasks
   const tasks = useMemo(() => {
-    // ...(dailyTasks ?? []),
     return [...(recurringTasks ?? []), ...(dailyTasks ?? [])];
   }, [dailyTasks, recurringTasks]);
 
   function incrementDate(change: number) {
     setDate(addDays(parseISO(date), change).toISOString());
+    setLoading(true);
+  }
+
+  function navigateDateByKey(event: React.KeyboardEvent<HTMLDivElement>) {
+    switch (event.key) {
+      case 'ArrowRight':
+        incrementDate(1);
+        break;
+      case 'ArrowLeft':
+        incrementDate(-1);
+        break;
+    }
   }
 
   return (
-    <div ref={container}>
-      <div className="task-page_date-container">
-        <IonButton onClick={() => incrementDate(-1)}>
-          <IonIcon icon={chevronBackCircleOutline} />
-        </IonButton>
-        <div className="task-page_date-display">
-          <div className="day-of-week">
-            {isToday ? 'Today' : format(new Date(date), 'EEEE')}
+    <>
+      <div
+        ref={container}
+        className="task-page_container"
+        tabIndex={0}
+        onKeyDown={(event) => navigateDateByKey(event)}
+      >
+        {/* Date control */}
+        <div className="task-page_date-container">
+          <IonButton onClick={() => incrementDate(-1)}>
+            <IonIcon icon={chevronBackCircleOutline} />
+          </IonButton>
+          <div className="task-page_date-display">
+            <div className="day-of-week">
+              {isToday ? 'Today' : format(new Date(date), 'EEEE')}
+            </div>
+            <div>{format(new Date(date), 'MMMM do, yyyy')}</div>
           </div>
-          <div>{format(new Date(date), 'MMMM do, yyyy')}</div>
+          <IonButton onClick={() => incrementDate(1)}>
+            <IonIcon icon={chevronForwardCircleOutline} />
+          </IonButton>
         </div>
-        <IonButton onClick={() => incrementDate(1)}>
-          <IonIcon icon={chevronForwardCircleOutline} />
-        </IonButton>
+
+        {/* Quick add */}
+        <QuickAddTask date={date} />
+
+        {/* Task list */}
+        <div className="task-age_list-wrapper">
+          <div className="task-page_list-content">
+            <TaskList tasks={tasks} date={date} loading={loading} />
+          </div>
+        </div>
       </div>
-      <QuickAddTask />
-      <TaskList tasks={tasks} date={date} />
       <IonFab slot="fixed" horizontal="end" vertical="bottom">
         <IonFabButton onClick={() => setOpen(true)}>
           <IonIcon icon={add}></IonIcon>
         </IonFabButton>
       </IonFab>
       <ToDoForm open={open} setOpen={setOpen} />
-    </div>
+    </>
   );
 };
 
