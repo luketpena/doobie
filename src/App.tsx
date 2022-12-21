@@ -35,7 +35,7 @@ import './assets/style/main.scss';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from './supabase-client';
 import Auth from './components/_auth/Auth/Auth';
-import { ToDoPage } from './pages/ToDoPage/ToDoPage';
+import { ToDoPage } from './pages/TaskPage/TaskPage';
 import { ContentWrapper } from './components/ContentWrapper/ContentWrapper';
 import {
   authenticate,

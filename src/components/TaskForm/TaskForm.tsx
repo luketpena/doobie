@@ -1,30 +1,29 @@
 import { IonButton, IonContent, IonFooter, IonModal } from '@ionic/react';
-import ToDoFormImportanceInput from '../_form/to-do-form/ToDoFormImportanceInput/ToDoFormImportanceInput';
 import { FormProvider, useForm } from 'react-hook-form';
 import FormInput from '../_form/FormInput/FormInput';
-import ToDoFormScheduleInput from '../_form/to-do-form/ToDoFormScheduleInput/ToDoFormScheduleInput';
+import TaskFormScheduleInput from './components/TaskFormScheduleInput/TaskFormScheduleInput';
 import ModalHeader from '../ModalHeader/ModalHeader';
 import {
   TaskCycleUnit,
   TaskListType,
   TaskRecurrence,
 } from '../../util/types/enums';
-import ToDoFormSubtaskInput from '../_form/to-do-form/ToDoFormSubtaskInput/ToDoFormSubtaskInput';
+import TaskFormSubtaskInput from './components/TaskFormSubtaskInput/TaskFormSubtaskInput';
 import FormIncrementor from '../_form/FormIncrementor/FormIncrementor';
 import { rules } from '../../util/rules';
-import './ToDoForm.scss';
 import { useCreateTaskMutation } from '../../services/task.service';
 import { useAppSelector } from '../../redux/store';
 import { selectProfile } from '../../redux/authentication-slice';
 import { useEffect } from 'react';
 import { startOfDay } from 'date-fns';
+import FormToggle from '../_form/FormToggle/FormToggle';
 
 interface ToDoFormProps {
   open: boolean;
   setOpen: (v: boolean) => void;
 }
 
-export interface ToDoFormValues {
+export interface TaskFormValues {
   name: string;
   important: boolean;
   start_at: Date;
@@ -36,11 +35,11 @@ export interface ToDoFormValues {
   warn_days: number;
 }
 
-const ToDoForm: React.FC<ToDoFormProps> = ({ open, setOpen }) => {
+const TaskForm: React.FC<ToDoFormProps> = ({ open, setOpen }) => {
   const profile = useAppSelector(selectProfile);
   const [createTask, { isLoading }] = useCreateTaskMutation();
 
-  const form = useForm<ToDoFormValues>({
+  const form = useForm<TaskFormValues>({
     defaultValues: {
       name: '',
       important: false,
@@ -113,9 +112,14 @@ const ToDoForm: React.FC<ToDoFormProps> = ({ open, setOpen }) => {
             placeholder="Task name"
             rules={{ required: rules.required() }}
           />
-          <ToDoFormImportanceInput />
-          <ToDoFormScheduleInput />
-          <ToDoFormSubtaskInput />
+          <FormToggle
+            control={control}
+            name="important"
+            trueText="is an *important* thing I need to do"
+            falseText="is a *regular* thing I need to do"
+          />
+          <TaskFormScheduleInput />
+          <TaskFormSubtaskInput />
           <FormIncrementor
             control={control}
             name="warn_days"
@@ -127,11 +131,12 @@ const ToDoForm: React.FC<ToDoFormProps> = ({ open, setOpen }) => {
         </FormProvider>
       </IonContent>
       <IonFooter>
-        <div className="footer-row">
+        <div className="p-2">
           <IonButton
             disabled={!isValid || !isDirty || isLoading}
             expand="block"
             onClick={submit}
+            className="h-16 text-lg"
           >
             Create task
           </IonButton>
@@ -141,4 +146,4 @@ const ToDoForm: React.FC<ToDoFormProps> = ({ open, setOpen }) => {
   );
 };
 
-export default ToDoForm;
+export default TaskForm;

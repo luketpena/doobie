@@ -7,7 +7,7 @@ import {
   chevronForwardCircleOutline,
 } from 'ionicons/icons';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import ToDoForm from '../../components/ToDoForm/ToDoForm';
+import TaskForm from '../../components/TaskForm/TaskForm';
 import { selectProfile } from '../../redux/authentication-slice';
 import { useAppSelector } from '../../redux/store';
 import {
@@ -19,7 +19,7 @@ import './TaskPage.scss';
 import { isToday as isTodayFn } from 'date-fns';
 import QuickAddTask from '../../components/QuickAddTask/QuickAddTask';
 
-const ToDoPage: React.FC = () => {
+const TaskPage: React.FC = () => {
   const container = useRef<any>(null);
   const profile = useAppSelector(selectProfile);
   const [open, setOpen] = useState(false);
@@ -102,9 +102,9 @@ const ToDoPage: React.FC = () => {
           <IonIcon icon={add}></IonIcon>
         </IonFabButton>
       </IonFab>
-      <ToDoForm open={open} setOpen={setOpen} />
+      <TaskForm open={open} setOpen={setOpen} />
     </>
   );
 };
 
-export { ToDoPage };
+export { TaskPage as ToDoPage };

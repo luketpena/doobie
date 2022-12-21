@@ -7,24 +7,23 @@ import {
 } from '../../../../util/options';
 import { TaskCycleUnit, TaskRecurrence } from '../../../../util/types/enums';
 import ModalHeader from '../../../ModalHeader/ModalHeader';
-import { ToDoFormValues } from '../../../ToDoForm/ToDoForm';
-import FormDatePicker from '../../FormDatePicker/FormDatePicker';
-import FormIncrementor from '../../FormIncrementor/FormIncrementor';
-import FormItem from '../../FormItem/FormItem';
+import { TaskFormValues } from '../../TaskForm';
+import FormDatePicker from '../../../_form/FormDatePicker/FormDatePicker';
+import FormIncrementor from '../../../_form/FormIncrementor/FormIncrementor';
+import FormItem from '../../../_form/FormItem/FormItem';
 import FormItemSelector, {
   valueToItemText,
-} from '../../FormItemSelector/FormItemSelector';
+} from '../../../_form/FormItemSelector/FormItemSelector';
 import { format } from 'date-fns';
-import './ToDoFormScheduleInput.scss';
 
-const ToDoFormScheduleInput: React.FC = () => {
+const TaskFormScheduleInput: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date>();
   const [recurrence, setRecurrence] = useState<TaskRecurrence>();
   const [cycleUnit, setCycleUnit] = useState<TaskCycleUnit | null>(null);
   const [cycleInterval, setCycleInterval] = useState<number | null>(null);
 
-  const form = useFormContext<ToDoFormValues>();
+  const form = useFormContext<TaskFormValues>();
   const { control, watch, resetField, getValues } = form;
 
   const scheduleText: string = useMemo(() => {
@@ -118,4 +117,4 @@ const ToDoFormScheduleInput: React.FC = () => {
   );
 };
 
-export default ToDoFormScheduleInput;
+export default TaskFormScheduleInput;

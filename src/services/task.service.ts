@@ -1,5 +1,5 @@
 import { endOfDay, startOfDay } from 'date-fns';
-import { ToDoFormValues } from '../components/ToDoForm/ToDoForm';
+import { TaskFormValues } from '../components/TaskForm/TaskForm';
 import { supabase } from '../supabase-client';
 import { filterRecurringTasks } from '../util/recurrence-fns';
 import { Task } from '../util/types/database';
@@ -14,7 +14,7 @@ import {
 const taskService = api.injectEndpoints({
   endpoints: (build) => ({
     // -- POST --
-    createTask: build.mutation<Task, ToDoFormValues>({
+    createTask: build.mutation<Task, TaskFormValues>({
       queryFn: async (payload) => {
         const data = await supabase
           .from('task')
@@ -39,7 +39,7 @@ const taskService = api.injectEndpoints({
       { name: string; profile_id: string; date: Date | string }
     >({
       queryFn: async ({ name, profile_id, date }) => {
-        const payload: ToDoFormValues = {
+        const payload: TaskFormValues = {
           name,
           start_at: new Date(date),
           important: false,

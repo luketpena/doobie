@@ -12,15 +12,15 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { taskListOptions } from '../../../../util/options';
 import { TaskListType } from '../../../../util/types/enums';
 import ModalHeader from '../../../ModalHeader/ModalHeader';
-import { ToDoFormValues } from '../../../ToDoForm/ToDoForm';
-import FormItem from '../../FormItem/FormItem';
+import { TaskFormValues } from '../../TaskForm';
+import FormItem from '../../../_form/FormItem/FormItem';
 import FormItemSelector, {
   valueToItemText,
-} from '../../FormItemSelector/FormItemSelector';
-import './ToDoFormSubtaskInput.scss';
+} from '../../../_form/FormItemSelector/FormItemSelector';
+import './TaskFormSubtaskInput.scss';
 
-const ToDoFormSubtaskInput: React.FC = () => {
-  const form = useFormContext<ToDoFormValues>();
+const TaskFormSubtaskInput: React.FC = () => {
+  const form = useFormContext<TaskFormValues>();
   const { control, watch, getValues, setValue } = form;
 
   const [open, setOpen] = useState(false);
@@ -91,7 +91,7 @@ const ToDoFormSubtaskInput: React.FC = () => {
               name="subtasks"
               render={({ field }) => {
                 return (
-                  <div className="to-do-form-subtask-input_subtask-column">
+                  <div className="flex flex-col gap2">
                     {field.value.map((subtask, i) => {
                       return (
                         <div
@@ -99,7 +99,7 @@ const ToDoFormSubtaskInput: React.FC = () => {
                           className="to-do-form-subtask-input_input-row"
                         >
                           <IonButton
-                            className="button"
+                            className="m-0 h-full"
                             onClick={() => {
                               const value = [...field.value];
                               value.splice(i, 1);
@@ -123,7 +123,7 @@ const ToDoFormSubtaskInput: React.FC = () => {
                         </div>
                       );
                     })}
-                    <div className="to-do-form-subtask-input_button-row">
+                    <div className="flex justify-center p-4">
                       <IonFab>
                         <IonFabButton
                           onClick={() => {
@@ -145,4 +145,4 @@ const ToDoFormSubtaskInput: React.FC = () => {
   );
 };
 
-export default ToDoFormSubtaskInput;
+export default TaskFormSubtaskInput;
