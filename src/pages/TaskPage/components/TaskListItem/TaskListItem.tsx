@@ -17,13 +17,19 @@ import { checkTaskComplete } from '../../../../util/task-fns';
 import { Task } from '../../../../util/types/database';
 import './TaskListItem.scss';
 import Hammer from 'hammerjs';
+import { motion } from 'framer-motion';
 
 interface TaskListItemProps {
   task: Task;
   date: string;
+  direction: -1 | 1;
 }
 
-const TaskListItem: React.FC<TaskListItemProps> = ({ task, date }) => {
+const TaskListItem: React.FC<TaskListItemProps> = ({
+  task,
+  date,
+  direction,
+}) => {
   const [present] = useIonActionSheet();
 
   const [markDeleted] = useMarkDeletedMutation();
@@ -88,7 +94,8 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ task, date }) => {
   }
 
   return (
-    <div
+    <motion.div
+      layout
       ref={containerRef}
       className={classNames('task-list-item_container', {
         'task-list-item_complete': completed && isToday,
@@ -100,7 +107,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ task, date }) => {
 
       <p>{task.name}</p>
       {isToday && <IonRippleEffect />}
-    </div>
+    </motion.div>
   );
 };
 

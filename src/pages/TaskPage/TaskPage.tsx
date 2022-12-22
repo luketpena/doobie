@@ -2,7 +2,7 @@ import { IonFab, IonFabButton, IonIcon } from '@ionic/react';
 import { skipToken } from '@reduxjs/toolkit/dist/query';
 import { addDays, parseISO } from 'date-fns';
 import { add } from 'ionicons/icons';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import TaskForm from '../../components/TaskForm/TaskForm';
 import { selectProfile } from '../../redux/authentication-slice';
 import { useAppSelector } from '../../redux/store';
@@ -15,6 +15,8 @@ import './TaskPage.scss';
 
 import QuickAddTask from '../../components/QuickAddTask/QuickAddTask';
 import DateNavigator from './components/DateNavigator/DateNavigator';
+import { Task } from '../../util/types/database';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const TaskPage: React.FC = () => {
   const container = useRef<any>(null);
@@ -23,25 +25,27 @@ const TaskPage: React.FC = () => {
   const [date, setDate] = useState(new Date().toISOString());
   const [loading, setLoading] = useState(true);
 
-  const { data: dailyTasks } = useGetTasksForDateQuery(
+  const { data: dailyTasks, isLoading: dailyLoading } = useGetTasksForDateQuery(
     profile ? { profileId: profile.id, date } : skipToken,
   );
-  const { data: recurringTasks } = useGetRecurringTasksQuery(
-    profile ? { profileId: profile.id, date } : skipToken,
-  );
+  const { data: recurringTasks, isLoading: recurringLoading } =
+    useGetRecurringTasksQuery(
+      profile ? { profileId: profile.id, date } : skipToken,
+    );
 
-  // NOTE: isLoading does not reset for these ongoing queries, we respond to data received instead
-  useEffect(() => {
-    setLoading(false);
-  }, [dailyTasks, recurringTasks]);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   // Combines recurring tasks for today and all daily tasks
-  const tasks = useMemo(() => {
-    return [...(recurringTasks ?? []), ...(dailyTasks ?? [])];
-  }, [dailyTasks, recurringTasks]);
+  useEffect(() => {
+    if (!dailyLoading && !recurringLoading) {
+      setTasks([...(recurringTasks ?? []), ...(dailyTasks ?? [])]);
+      setLoading(false);
+    }
+  }, [dailyTasks, recurringTasks, dailyLoading, recurringLoading]);
 
   function incrementDate(change: number) {
     setDate(addDays(parseISO(date), change).toISOString());
+    setTasks([]);
     setLoading(true);
   }
 
@@ -58,29 +62,31 @@ const TaskPage: React.FC = () => {
 
   return (
     <>
-      <div
-        ref={container}
-        className="task-page_container"
-        tabIndex={0}
-        onKeyDown={(event) => navigateDateByKey(event)}
-      >
-        {/* Date control */}
-        <DateNavigator
-          date={date}
-          incrementDate={incrementDate}
-          setDate={setDate}
-        />
+      <AnimatePresence>
+        <div
+          ref={container}
+          className="task-page_container"
+          tabIndex={0}
+          onKeyDown={(event) => navigateDateByKey(event)}
+        >
+          {/* Date control */}
+          <DateNavigator
+            date={date}
+            incrementDate={incrementDate}
+            setDate={setDate}
+          />
 
-        {/* Quick add */}
-        <QuickAddTask date={date} />
+          {/* Quick add */}
+          <QuickAddTask date={date} />
 
-        {/* Task list */}
-        <div className="task-age_list-wrapper">
-          <div className="task-page_list-content">
-            <TaskList tasks={tasks} date={date} loading={loading} />
-          </div>
+          {/* Task list */}
+          <motion.div layout className="w-full h-full relative">
+            <div className="w-full h-full overflow-y-scroll overflow-x-hidden left-0 top-0 absolute">
+              <TaskList tasks={tasks} date={date} loading={loading} />
+            </div>
+          </motion.div>
         </div>
-      </div>
+      </AnimatePresence>
       <IonFab slot="fixed" horizontal="end" vertical="bottom">
         <IonFabButton onClick={() => setOpen(true)}>
           <IonIcon icon={add}></IonIcon>
