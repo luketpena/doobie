@@ -16,8 +16,8 @@ import {
 import { checkTaskComplete } from '../../../../util/task-fns';
 import { Task } from '../../../../util/types/database';
 import './TaskListItem.scss';
-import Hammer from 'hammerjs';
 import { motion } from 'framer-motion';
+import { useLongPress } from '../../../../util/gesture-hooks/gesture.long-press';
 
 interface TaskListItemProps {
   task: Task;
@@ -31,6 +31,10 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
   direction,
 }) => {
   const [present] = useIonActionSheet();
+
+  const pressRef = useLongPress({
+    action: presentTaskItemOptions,
+  });
 
   const [markDeleted] = useMarkDeletedMutation();
   const [markComplete, { isLoading: completeLoading }] =
@@ -49,27 +53,41 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
   }, [date]);
 
   useEffect(() => {
-    let hammerTime: HammerManager;
-    if (containerRef.current) {
-      hammerTime = new Hammer(containerRef.current);
-      hammerTime.on('press', function (e: any) {
-        present({
-          buttons: [
-            {
-              text: 'Delete task',
-              role: 'destructive',
-              handler: () => {
-                markDeleted({ taskId: task.id });
-              },
-            },
-          ],
-        });
-      });
-    }
-    return () => {
-      hammerTime.off('press');
-    };
+    // let hammerTime: HammerManager;
+    // if (containerRef.current) {
+    //   hammerTime = new Hammer(containerRef.current);
+    //   hammerTime.on('press', function (e: any) {
+    //     present({
+    //       buttons: [
+    //         {
+    //           text: 'Delete task',
+    //           role: 'destructive',
+    //           handler: () => {
+    //             markDeleted({ taskId: task.id });
+    //           },
+    //         },
+    //       ],
+    //     });
+    //   });
+    // }
+    // return () => {
+    //   hammerTime.off('press');
+    // };
   }, [containerRef, present, task, markDeleted]);
+
+  function presentTaskItemOptions() {
+    present({
+      buttons: [
+        {
+          text: 'Delete task',
+          role: 'destructive',
+          handler: () => {
+            markDeleted({ taskId: task.id });
+          },
+        },
+      ],
+    });
+  }
 
   function toggleCompletion() {
     if (!completeLoading && !incompleteLoading && isToday) {
@@ -96,7 +114,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
   return (
     <motion.div
       layout
-      ref={containerRef}
+      ref={pressRef}
       className={classNames('task-list-item_container', {
         'task-list-item_complete': completed && isToday,
         'ion-activatable ripple-parent rectangle': isToday,
