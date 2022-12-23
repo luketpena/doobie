@@ -67,11 +67,11 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="date-navigator-container">
-        <IonButton onClick={() => incrementDate(-1)}>
+    <div className="flex flex-col gap-4 select-none">
+      <div>
+        {/* <IonButton onClick={() => incrementDate(-1)}>
           <IonIcon icon={chevronBackCircleOutline} />
-        </IonButton>
+        </IonButton> */}
         <div
           className="flex flex-col justify-center items-center"
           onClick={jumpToToday}
@@ -90,9 +90,9 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({
             {format(new Date(date), 'MMMM do, yyyy')}
           </div>
         </div>
-        <IonButton onClick={() => incrementDate(1)}>
+        {/* <IonButton onClick={() => incrementDate(1)}>
           <IonIcon icon={chevronForwardCircleOutline} />
-        </IonButton>
+        </IonButton> */}
       </div>
       <IonProgressBar value={progress} />
     </div>

@@ -17,9 +17,14 @@ import QuickAddTask from '../../components/QuickAddTask/QuickAddTask';
 import DateNavigator from './components/DateNavigator/DateNavigator';
 import { Task } from '../../util/types/database';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSwipe } from '../../util/gesture-hooks/gesture.swipe';
 
 const TaskPage: React.FC = () => {
-  const container = useRef<any>(null);
+  const container = useSwipe({
+    actionHorizontal: (dir) => {
+      incrementDate(-dir);
+    },
+  });
   const profile = useAppSelector(selectProfile);
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(new Date().toISOString());
