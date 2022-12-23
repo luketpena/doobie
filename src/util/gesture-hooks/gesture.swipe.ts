@@ -1,5 +1,7 @@
 import { differenceInMilliseconds } from 'date-fns';
 import { useEffect, useRef } from 'react';
+import { distanceBetweenPoints } from './gesture-fns';
+import { Pos } from './gesture-types';
 
 interface SwipeProps {
   actionHorizontal?: (v: 1 | -1) => void;
@@ -9,7 +11,7 @@ interface SwipeProps {
 export const useSwipe = ({ actionHorizontal, actionVertical }: SwipeProps) => {
   const listRef = useRef<any>(null);
   const duration = 500;
-  const minDistance = 200;
+  const minDistance = 100;
 
   useEffect(() => {
     /**
@@ -20,7 +22,7 @@ export const useSwipe = ({ actionHorizontal, actionVertical }: SwipeProps) => {
      */
     // Setup
     let current: any;
-    const posStart = { x: 0, y: 0 };
+    const posStart: Pos = { x: 0, y: 0 };
     let timeStart: Date;
 
     // Basic functions
@@ -36,20 +38,19 @@ export const useSwipe = ({ actionHorizontal, actionVertical }: SwipeProps) => {
       timeStart = new Date();
     };
 
-    const upAction = ({ endX, endY }: { endX: number; endY: number }) => {
+    const upAction = (pos: Pos) => {
+      const { x, y } = pos;
       const msElapsed = differenceInMilliseconds(timeStart, new Date());
       if (msElapsed < duration) {
-        const xx = Math.pow(endX - posStart.x, 2);
-        const yy = Math.pow(endY - posStart.y, 2);
-        const distance = Math.sqrt(xx + yy);
+        const distance = distanceBetweenPoints(pos, posStart);
         if (distance > minDistance) {
-          if (Math.abs(posStart.x - endX) > Math.abs(posStart.y - endY)) {
+          if (Math.abs(posStart.x - x) > Math.abs(posStart.y - y)) {
             if (actionHorizontal) {
-              actionHorizontal(posStart.x > endX ? -1 : 1);
+              actionHorizontal(posStart.x > x ? -1 : 1);
             }
           } else {
             if (actionVertical) {
-              actionVertical(posStart.y > endY ? -1 : 1);
+              actionVertical(posStart.y > y ? -1 : 1);
             }
           }
         }
@@ -65,7 +66,7 @@ export const useSwipe = ({ actionHorizontal, actionVertical }: SwipeProps) => {
     };
 
     const mouseUpAction = (e: MouseEvent) => {
-      upAction({ endX: e.screenX, endY: e.screenY });
+      upAction({ x: e.screenX, y: e.screenY });
     };
 
     // Touch functions
@@ -78,8 +79,8 @@ export const useSwipe = ({ actionHorizontal, actionVertical }: SwipeProps) => {
 
     const touchUpAction = (e: TouchEvent) => {
       upAction({
-        endX: e.changedTouches[0].screenX,
-        endY: e.changedTouches[0].screenY,
+        x: e.changedTouches[0].screenX,
+        y: e.changedTouches[0].screenY,
       });
     };
 

@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { distanceBetweenPoints } from './gesture-fns';
+import { Pos } from './gesture-types';
 
 interface LongPressProps {
   action: () => void;
@@ -17,10 +19,13 @@ export const useLongPress = ({
     // Setup
     let pressTimeout: any;
     let current: any;
+    const startPos: Pos = { x: 0, y: 0 };
 
     // Start a listener on down
-    const mouseDownAction = () => {
+    const downAction = ({ x, y }: Pos) => {
       if (!pressTimeout) {
+        startPos.x = x;
+        startPos.y = y;
         pressTimeout = setTimeout(() => {
           action();
           pressTimeout = undefined;
@@ -29,7 +34,7 @@ export const useLongPress = ({
     };
 
     // Quick any active listener on up
-    const mouseUpAction = () => {
+    const upAction = () => {
       if (pressTimeout) {
         clearTimeout(pressTimeout);
         pressTimeout = undefined;
@@ -37,34 +42,70 @@ export const useLongPress = ({
     };
 
     // Reset the timer if movement is detect
-    const moveAction = () => {
-      if (pressTimeout && noMovement) {
+    const moveAction = (pos: Pos) => {
+      if (
+        pressTimeout &&
+        noMovement &&
+        distanceBetweenPoints(pos, startPos) > 16
+      ) {
         clearTimeout(pressTimeout);
         pressTimeout = undefined;
-        mouseDownAction();
+        downAction(pos);
       }
+    };
+
+    // Mouse actions
+    const mouseDownAction = (e: MouseEvent) => {
+      downAction({
+        x: e.screenX,
+        y: e.screenY,
+      });
+    };
+
+    const mouseMoveAction = (e: MouseEvent) => {
+      moveAction({
+        x: e.screenX,
+        y: e.screenY,
+      });
+    };
+
+    // Touch actions
+    const touchDownAction = (e: TouchEvent) => {
+      downAction({
+        x: e.changedTouches[0].screenX,
+        y: e.changedTouches[0].screenY,
+      });
+    };
+
+    const touchMoveAction = (e: TouchEvent) => {
+      moveAction({
+        x: e.changedTouches[0].screenX,
+        y: e.changedTouches[0].screenY,
+      });
     };
 
     // Subscribe when a ref is found
     if (listRef && listRef.current) {
       current = listRef.current;
       current.addEventListener('mousedown', mouseDownAction);
-      document.addEventListener('mouseup', mouseUpAction);
-      document.addEventListener('mousemove', moveAction);
-      // current.addEventListener('touchstart', mouseDownAction);
-      // current.addEventListener('touchend', mouseUpAction);
-      // document.addEventListener('touchmove', moveAction);
+      document.addEventListener('mouseup', upAction);
+      document.addEventListener('mousemove', mouseMoveAction);
+
+      current.addEventListener('touchstart', touchDownAction);
+      document.addEventListener('touchend', upAction);
+      document.addEventListener('touchmove', touchMoveAction);
     }
 
     // Unsubscribe listeners
     return () => {
       if (current) {
         current.removeEventListener('mousedown', mouseDownAction);
-        document.removeEventListener('mouseup', mouseUpAction);
-        document.removeEventListener('mousemove', moveAction);
-        // document.removeEventListener('touchmove', moveAction);
-        // current.removeEventListener('touchstart', mouseDownAction);
-        // current.removeEventListener('touchend', mouseUpAction);
+        document.removeEventListener('mouseup', upAction);
+        document.removeEventListener('mousemove', mouseMoveAction);
+
+        current.removeEventListener('touchstart', touchDownAction);
+        document.removeEventListener('touchend', upAction);
+        document.removeEventListener('touchmove', touchMoveAction);
       }
       // Clear any running timeout if active on dismount
       if (pressTimeout) {
