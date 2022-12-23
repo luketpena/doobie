@@ -10,7 +10,6 @@ interface SwipeProps {
 
 export const useSwipe = ({ actionHorizontal, actionVertical }: SwipeProps) => {
   const listRef = useRef<any>(null);
-  const duration = 500;
   const minDistance = 100;
 
   useEffect(() => {
@@ -45,7 +44,7 @@ export const useSwipe = ({ actionHorizontal, actionVertical }: SwipeProps) => {
 
       const pixelsPerMs = distance / msElapsed;
 
-      if (pixelsPerMs > 0.8) {
+      if (pixelsPerMs > 0.5) {
         if (distance > minDistance) {
           if (Math.abs(posStart.x - x) > Math.abs(posStart.y - y)) {
             if (actionHorizontal) {

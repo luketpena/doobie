@@ -43,7 +43,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ task, date }) => {
   const [markIncomplete, { isLoading: incompleteLoading }] =
     useMarkIncompleteMutation();
   const [updateTask, { isLoading: updateLoading }] = useUpdateTaskMutation();
-  const [editMode, setEditMode] = useState(true);
+  const [editMode, setEditMode] = useState(false);
   const [name, setName] = useState(task.name);
 
   const completed = useMemo(() => {
