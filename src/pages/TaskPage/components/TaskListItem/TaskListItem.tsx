@@ -5,31 +5,32 @@ import {
   useIonActionSheet,
 } from '@ionic/react';
 import classNames from 'classnames';
-import { checkmarkCircleOutline, ellipseOutline } from 'ionicons/icons';
-import { useEffect, useMemo, useRef } from 'react';
+import {
+  checkmark,
+  checkmarkCircleOutline,
+  ellipseOutline,
+} from 'ionicons/icons';
+import { useMemo, useState } from 'react';
 import { getDbDate } from '../../../../services/service-utils';
 import {
   useMarkCompleteMutation,
   useMarkDeletedMutation,
   useMarkIncompleteMutation,
+  useUpdateTaskMutation,
 } from '../../../../services/task.service';
 import { checkTaskComplete } from '../../../../util/task-fns';
 import { Task } from '../../../../util/types/database';
 import './TaskListItem.scss';
 import { motion } from 'framer-motion';
 import { useLongPress } from '../../../../util/gesture-hooks/gesture.long-press';
+import { addDays } from 'date-fns';
 
 interface TaskListItemProps {
   task: Task;
   date: string;
-  direction: -1 | 1;
 }
 
-const TaskListItem: React.FC<TaskListItemProps> = ({
-  task,
-  date,
-  direction,
-}) => {
+const TaskListItem: React.FC<TaskListItemProps> = ({ task, date }) => {
   const [present] = useIonActionSheet();
 
   const pressRef = useLongPress({
@@ -41,8 +42,9 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
     useMarkCompleteMutation();
   const [markIncomplete, { isLoading: incompleteLoading }] =
     useMarkIncompleteMutation();
-
-  const containerRef = useRef<any>(null);
+  const [updateTask, { isLoading: updateLoading }] = useUpdateTaskMutation();
+  const [editMode, setEditMode] = useState(true);
+  const [name, setName] = useState(task.name);
 
   const completed = useMemo(() => {
     return checkTaskComplete(task, date);
@@ -52,32 +54,25 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
     return getDbDate(date) === getDbDate();
   }, [date]);
 
-  useEffect(() => {
-    // let hammerTime: HammerManager;
-    // if (containerRef.current) {
-    //   hammerTime = new Hammer(containerRef.current);
-    //   hammerTime.on('press', function (e: any) {
-    //     present({
-    //       buttons: [
-    //         {
-    //           text: 'Delete task',
-    //           role: 'destructive',
-    //           handler: () => {
-    //             markDeleted({ taskId: task.id });
-    //           },
-    //         },
-    //       ],
-    //     });
-    //   });
-    // }
-    // return () => {
-    //   hammerTime.off('press');
-    // };
-  }, [containerRef, present, task, markDeleted]);
-
   function presentTaskItemOptions() {
     present({
+      header: task.name,
       buttons: [
+        {
+          text: 'Change text',
+          handler: () => {
+            setEditMode(true);
+          },
+        },
+        {
+          text: 'Bump to tomorrow',
+          handler: () => {
+            updateTask({
+              id: task.id,
+              start_at: addDays(new Date(), 1).toISOString(),
+            });
+          },
+        },
         {
           text: 'Delete task',
           role: 'destructive',
@@ -90,16 +85,22 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
   }
 
   function toggleCompletion() {
-    if (!completeLoading && !incompleteLoading && isToday) {
-      if (!completed) {
-        markComplete({ taskId: task.id, date });
-      } else {
-        markIncomplete({ taskId: task.id });
+    if (!updateLoading && !editMode) {
+      if (!completeLoading && !incompleteLoading && isToday) {
+        if (!completed) {
+          markComplete({ taskId: task.id, date });
+        } else {
+          markIncomplete({ taskId: task.id });
+        }
       }
     }
   }
 
   function renderIcon() {
+    if (editMode) {
+      return <div></div>;
+    }
+
     if (!isToday) {
       return <div className="task-list-item_icon-spacer"></div>;
     } else if (completeLoading || incompleteLoading) {
@@ -109,6 +110,40 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         <IonIcon icon={completed ? checkmarkCircleOutline : ellipseOutline} />
       );
     }
+  }
+
+  async function submitNameChange() {
+    if (!updateLoading) {
+      try {
+        await updateTask({
+          id: task.id,
+          name,
+        });
+        setEditMode(false);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+
+  function renderTextInput() {
+    return (
+      <div className="flex items-center gap-4 w-full">
+        <input
+          className="form-input"
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <div className="w-8 h-8">
+          {!updateLoading ? (
+            <IonIcon icon={checkmark} onClick={submitNameChange} />
+          ) : (
+            <IonSpinner name="crescent" />
+          )}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -123,8 +158,8 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
     >
       {renderIcon()}
 
-      <p>{task.name}</p>
-      {isToday && <IonRippleEffect />}
+      {!editMode ? <p>{task.name}</p> : renderTextInput()}
+      {isToday && !editMode && <IonRippleEffect />}
     </motion.div>
   );
 };

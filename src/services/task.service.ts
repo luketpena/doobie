@@ -115,6 +115,21 @@ const taskService = api.injectEndpoints({
     ),
 
     // -- PUT --
+    updateTask: build.mutation<Task, Partial<Task>>({
+      queryFn: async (payload) => {
+        console.log('Updating:', payload);
+        const data = await supabase
+          .from('task')
+          .update({ ...payload })
+          .eq('id', payload.id)
+          .select('*')
+          .then(processSupabaseData);
+
+        return { data };
+      },
+      invalidatesTags: [apiTags.tasks, apiTags.recurringTasks],
+    }),
+
     markComplete: build.mutation<Task, { taskId: string; date: string }>({
       queryFn: async ({ taskId, date }) => {
         const data = await supabase
@@ -170,6 +185,7 @@ export const {
   useQuickCreateTaskMutation,
   useGetTasksForDateQuery,
   useGetRecurringTasksQuery,
+  useUpdateTaskMutation,
   useMarkCompleteMutation,
   useMarkIncompleteMutation,
   useMarkDeletedMutation,

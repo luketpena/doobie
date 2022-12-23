@@ -6,10 +6,7 @@ import {
   getDaysInMonth,
   startOfDay,
 } from 'date-fns';
-import {
-  chevronBackCircleOutline,
-  chevronForwardCircleOutline,
-} from 'ionicons/icons';
+import { chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import { useMemo } from 'react';
 import { isToday as isTodayFn } from 'date-fns';
 import './DateNavigator.scss';
@@ -59,8 +56,12 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({
       >
         (
         {daysOffset > 0
-          ? `in ${daysOffset} ${daysOffset === 1 ? 'day' : 'days'}`
-          : `${Math.abs(daysOffset)} ${daysOffset === -1 ? 'day' : 'days'} ago`}
+          ? `${daysOffset === 1 ? 'tomorrow' : `in ${daysOffset} days`}`
+          : `${
+              daysOffset === -1
+                ? 'yesterday'
+                : `${Math.abs(daysOffset)} days ago`
+            }`}
         )
       </motion.span>
     );
@@ -68,14 +69,8 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({
 
   return (
     <div className="flex flex-col gap-4 select-none">
-      <div>
-        {/* <IonButton onClick={() => incrementDate(-1)}>
-          <IonIcon icon={chevronBackCircleOutline} />
-        </IonButton> */}
-        <div
-          className="flex flex-col justify-center items-center"
-          onClick={jumpToToday}
-        >
+      <div className="relative">
+        <div className="flex flex-col justify-center items-center">
           <div className="font-bold text-lg flex items-center gap-2">
             {daysOffset < 0 && renderDayCount()}
 
@@ -90,9 +85,27 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({
             {format(new Date(date), 'MMMM do, yyyy')}
           </div>
         </div>
-        {/* <IonButton onClick={() => incrementDate(1)}>
-          <IonIcon icon={chevronForwardCircleOutline} />
-        </IonButton> */}
+        <div className="absolute w-full h-full left-0 top-0 flex justify-between opacity-50">
+          <div
+            className="w-[30%] flex items-center"
+            onClick={() => incrementDate(-1)}
+            role="button"
+          >
+            <IonIcon icon={chevronBackOutline} />
+          </div>
+          <div
+            className="w-[40%] h-full"
+            onClick={jumpToToday}
+            role="button"
+          ></div>
+          <div
+            className="w-[30%] flex items-center justify-end"
+            onClick={() => incrementDate(1)}
+            role="button"
+          >
+            <IonIcon icon={chevronForwardOutline} />
+          </div>
+        </div>
       </div>
       <IonProgressBar value={progress} />
     </div>

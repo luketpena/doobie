@@ -55,7 +55,6 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, date, loading }) => {
             key={`task-list-item-${task.id}-${date}`}
             task={task}
             date={date}
-            direction={direction}
           />
         ))}
       </motion.div>

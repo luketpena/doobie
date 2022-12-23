@@ -40,9 +40,12 @@ export const useSwipe = ({ actionHorizontal, actionVertical }: SwipeProps) => {
 
     const upAction = (pos: Pos) => {
       const { x, y } = pos;
-      const msElapsed = differenceInMilliseconds(timeStart, new Date());
-      if (msElapsed < duration) {
-        const distance = distanceBetweenPoints(pos, posStart);
+      const msElapsed = differenceInMilliseconds(new Date(), timeStart);
+      const distance = distanceBetweenPoints(pos, posStart);
+
+      const pixelsPerMs = distance / msElapsed;
+
+      if (pixelsPerMs > 0.8) {
         if (distance > minDistance) {
           if (Math.abs(posStart.x - x) > Math.abs(posStart.y - y)) {
             if (actionHorizontal) {
