@@ -1,4 +1,4 @@
-import { isSameDay } from 'date-fns';
+import { isPast, isSameDay } from 'date-fns';
 import { Task } from './types/database';
 import { utcToZonedTime } from 'date-fns-tz';
 
@@ -12,5 +12,5 @@ export function checkTaskComplete(task: Task, date?: string): boolean {
     'America/Chicago',
   );
 
-  return isSameDay(completedAt, checkDate);
+  return isSameDay(completedAt, checkDate) || isPast(completedAt);
 }

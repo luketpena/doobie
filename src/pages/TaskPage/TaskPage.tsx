@@ -92,11 +92,11 @@ const TaskPage: React.FC = () => {
           </motion.div>
         </div>
       </AnimatePresence>
-      <IonFab slot="fixed" horizontal="end" vertical="bottom">
+      {/* <IonFab slot="fixed" horizontal="end" vertical="bottom">
         <IonFabButton onClick={() => setOpen(true)}>
           <IonIcon icon={add}></IonIcon>
         </IonFabButton>
-      </IonFab>
+      </IonFab> */}
       <TaskForm open={open} setOpen={setOpen} />
     </>
   );

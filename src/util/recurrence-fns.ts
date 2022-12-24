@@ -1,4 +1,4 @@
-import { getDay, parse, startOfDay } from 'date-fns';
+import { getDay, startOfDay } from 'date-fns';
 import { translateDbDate } from '../services/service-utils';
 import { Task } from './types/database';
 import { TaskRecurrence } from './types/enums';
@@ -14,7 +14,6 @@ export function filterRecurringTasks(tasks: Task[], inputDate: string) {
         return true;
 
       case TaskRecurrence.Weekly:
-        console.log('Task:', task);
         return getDay(date) === getDay(taskStartDate);
     }
 

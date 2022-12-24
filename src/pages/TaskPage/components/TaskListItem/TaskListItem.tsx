@@ -8,6 +8,7 @@ import classNames from 'classnames';
 import {
   checkmark,
   checkmarkCircleOutline,
+  ellipse,
   ellipseOutline,
 } from 'ionicons/icons';
 import { useMemo, useState } from 'react';
@@ -23,7 +24,7 @@ import { Task } from '../../../../util/types/database';
 import './TaskListItem.scss';
 import { motion } from 'framer-motion';
 import { useLongPress } from '../../../../util/gesture-hooks/gesture.long-press';
-import { addDays } from 'date-fns';
+import { addDays, isPast as isPastFn, endOfDay } from 'date-fns';
 
 interface TaskListItemProps {
   task: Task;
@@ -50,43 +51,45 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ task, date }) => {
     return checkTaskComplete(task, date);
   }, [task, date]);
 
-  const isToday = useMemo(() => {
-    return getDbDate(date) === getDbDate();
+  const isPast = useMemo(() => {
+    return isPastFn(endOfDay(new Date(date)));
   }, [date]);
 
   function presentTaskItemOptions() {
-    present({
-      header: task.name,
-      buttons: [
-        {
-          text: 'Change text',
-          handler: () => {
-            setEditMode(true);
+    if (!editMode) {
+      present({
+        header: task.name,
+        buttons: [
+          {
+            text: 'Change text',
+            handler: () => {
+              setEditMode(true);
+            },
           },
-        },
-        {
-          text: 'Bump to tomorrow',
-          handler: () => {
-            updateTask({
-              id: task.id,
-              start_at: addDays(new Date(), 1).toISOString(),
-            });
+          {
+            text: 'Bump to tomorrow',
+            handler: () => {
+              updateTask({
+                id: task.id,
+                start_at: addDays(new Date(), 1).toISOString(),
+              });
+            },
           },
-        },
-        {
-          text: 'Delete task',
-          role: 'destructive',
-          handler: () => {
-            markDeleted({ taskId: task.id });
+          {
+            text: 'Delete task',
+            role: 'destructive',
+            handler: () => {
+              markDeleted({ taskId: task.id });
+            },
           },
-        },
-      ],
-    });
+        ],
+      });
+    }
   }
 
   function toggleCompletion() {
     if (!updateLoading && !editMode) {
-      if (!completeLoading && !incompleteLoading && isToday) {
+      if (!completeLoading && !incompleteLoading && !isPast) {
         if (!completed) {
           markComplete({ taskId: task.id, date });
         } else {
@@ -101,8 +104,15 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ task, date }) => {
       return <div></div>;
     }
 
-    if (!isToday) {
-      return <div className="task-list-item_icon-spacer"></div>;
+    if (isPast) {
+      return (
+        <div className="w-[28px] h-[28px] flex flex-col justify-center items-center">
+          <IonIcon
+            icon={completed ? ellipse : ellipseOutline}
+            className="text-sm opacity-30"
+          />
+        </div>
+      );
     } else if (completeLoading || incompleteLoading) {
       return <IonSpinner name="crescent" />;
     } else {
@@ -128,12 +138,13 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ task, date }) => {
 
   function renderTextInput() {
     return (
-      <div className="flex items-center gap-4 w-full">
+      <div className="flex items-center gap-2 w-full">
         <input
-          className="form-input"
+          className="task-input"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          disabled={updateLoading}
         />
         <div className="w-8 h-8">
           {!updateLoading ? (
@@ -149,17 +160,19 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ task, date }) => {
   return (
     <motion.div
       layout
-      ref={pressRef}
-      className={classNames('task-list-item_container', {
-        'task-list-item_complete': completed && isToday,
-        'ion-activatable ripple-parent rectangle': isToday,
+      ref={!editMode ? pressRef : undefined}
+      className={classNames({
+        'task-list-item_container': !editMode,
+        'task-list-item_complete': completed && !isPast,
+        'ion-activatable ripple-parent rectangle': !isPast,
+        'opacity-30': isPast,
       })}
       onClick={toggleCompletion}
     >
       {renderIcon()}
 
       {!editMode ? <p>{task.name}</p> : renderTextInput()}
-      {isToday && !editMode && <IonRippleEffect />}
+      {!isPast && !editMode && <IonRippleEffect />}
     </motion.div>
   );
 };

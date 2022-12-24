@@ -117,7 +117,6 @@ const taskService = api.injectEndpoints({
     // -- PUT --
     updateTask: build.mutation<Task, Partial<Task>>({
       queryFn: async (payload) => {
-        console.log('Updating:', payload);
         const data = await supabase
           .from('task')
           .update({ ...payload })
